@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev Tools Website</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React + ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // ---------- TOOL COMPONENTS ----------
+
+    function TextToBase64() {
+      const [text, setText] = useState("");
+      const [output, setOutput] = useState("");
+      return (
+        <div className="p-4 bg-white rounded shadow space-y-2">
+          <textarea 
+            className="w-full border p-2 rounded"
+            placeholder="Enter text..."
+            value={text}
+            onChange={e => setText(e.target.value)}
+          />
+          <div className="flex space-x-2">
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              onClick={() => setOutput(btoa(text))}
+            >Encode</button>
+            <button
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              onClick={() => setOutput(atob(text))}
+            >Decode</button>
+          </div>
+          <textarea 
+            className="w-full border p-2 rounded" 
+            value={output} readOnly
+            placeholder="Output..."
+          />
+        </div>
+      );
+    }
+
+    function Sha512Generator() {
+      const [text, setText] = useState("");
+      const [hash, setHash] = useState("");
+
+      const generate = async () => {
+        const buffer = new TextEncoder().encode(text);
+        const digest = await crypto.subtle.digest("SHA-512", buffer);
+        setHash(Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join(''));
+      };
+
+      return (
+        <div className="p-4 bg-white rounded shadow space-y-2">
+          <input 
+            type="text" 
+            className="w-full border p-2 rounded"
+            placeholder="Enter text..."
+            value={text}
+            onChange={e => setText(e.target.value)}
+          />
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={generate}
+          >Generate SHA-512</button>
+          <textarea className="w-full border p-2 rounded" value={hash} readOnly placeholder="Hash output..." />
+        </div>
+      );
+    }
+
+    function Sha1To512Generator() {
+      const [text, setText] = useState("");
+      const [hash, setHash] = useState("");
+
+      const generate = async () => {
+        const buffer = new TextEncoder().encode(text);
+        const sha1 = await crypto.subtle.digest("SHA-1", buffer);
+        const sha512 = await crypto.subtle.digest("SHA-512", buffer);
+        setHash(
+          "SHA-1: " + Array.from(new Uint8Array(sha1)).map(b => b.toString(16).padStart(2,'0')).join('') +
+          "\nSHA-512: " + Array.from(new Uint8Array(sha512)).map(b => b.toString(16).padStart(2,'0')).join('')
+        );
+      };
+
+      return (
+        <div className="p-4 bg-white rounded shadow space-y-2">
+          <input 
+            type="text" 
+            className="w-full border p-2 rounded"
+            placeholder="Enter text..."
+            value={text}
+            onChange={e => setText(e.target.value)}
+          />
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={generate}
+          >Generate SHA-1 & SHA-512</button>
+          <textarea className="w-full border p-2 rounded" value={hash} readOnly placeholder="Hash output..." />
+        </div>
+      );
+    }
+
+    function UuidGenerator() {
+      const [uuid, setUuid] = useState("");
+      return (
+        <div className="p-4 bg-white rounded shadow space-y-2">
+          <button
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+            onClick={() => setUuid(crypto.randomUUID())}
+          >Generate UUID</button>
+          <input type="text" className="w-full border p-2 rounded" value={uuid} readOnly />
+        </div>
+      );
+    }
+
+    function RandomStringGenerator() {
+      const [str, setStr] = useState("");
+      const [length, setLength] = useState(16);
+
+      const generate = () => {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let result = "";
+        for (let i=0;i<length;i++) result += chars.charAt(Math.floor(Math.random()*chars.length));
+        setStr(result);
+      };
+
+      return (
+        <div className="p-4 bg-white rounded shadow space-y-2">
+          <input type="number" className="border p-2 rounded w-24" value={length} onChange={e => setLength(parseInt(e.target.value)||0)} />
+          <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" onClick={generate}>Generate Random String</button>
+          <input type="text" className="w-full border p-2 rounded" value={str} readOnly />
+        </div>
+      );
+    }
+
+    function LoremIpsumGenerator() {
+      const [count, setCount] = useState(1);
+      const [text, setText] = useState("");
+
+      const generate = () => {
+        const lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ";
+        setText(lorem.repeat(count));
+      };
+
+      return (
+        <div className="p-4 bg-white rounded shadow space-y-2">
+          <input type="number" className="border p-2 rounded w-24" value={count} onChange={e => setCount(parseInt(e.target.value)||1)} />
+          <button className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600" onClick={generate}>Generate Lorem Ipsum</button>
+          <textarea className="w-full border p-2 rounded" value={text} readOnly />
+        </div>
+      );
+    }
+
+    function DateToTimestamp() {
+      const [date, setDate] = useState("");
+      const [timestamp, setTimestamp] = useState("");
+
+      return (
+        <div className="p-4 bg-white rounded shadow space-y-2">
+          <input type="datetime-local" className="border p-2 rounded w-full" value={date} onChange={e=>setDate(e.target.value)} />
+          <button className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600" onClick={()=>setTimestamp(new Date(date).getTime())}>Convert</button>
+          <input type="text" className="w-full border p-2 rounded" value={timestamp} readOnly />
+        </div>
+      );
+    }
+
+    function UrlEncodeDecode() {
+      const [text, setText] = useState("");
+      const [output, setOutput] = useState("");
+
+      return (
+        <div className="p-4 bg-white rounded shadow space-y-2">
+          <input type="text" className="w-full border p-2 rounded" value={text} onChange={e=>setText(e.target.value)} placeholder="Enter text" />
+          <div className="flex space-x-2">
+            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={()=>setOutput(encodeURIComponent(text))}>Encode</button>
+            <button className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600" onClick={()=>setOutput(decodeURIComponent(text))}>Decode</button>
+          </div>
+          <textarea className="w-full border p-2 rounded" value={output} readOnly />
+        </div>
+      );
+    }
+
+    function JsonFormatter() {
+      const [text, setText] = useState("");
+      const [formatted, setFormatted] = useState("");
+
+      const format = () => {
+        try {
+          setFormatted(JSON.stringify(JSON.parse(text), null, 2));
+        } catch(e) {
+          setFormatted("Invalid JSON");
+        }
+      };
+
+      return (
+        <div className="p-4 bg-white rounded shadow space-y-2">
+          <textarea className="w-full border p-2 rounded" value={text} onChange={e=>setText(e.target.value)} placeholder="Enter JSON" />
+          <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" onClick={format}>Format JSON</button>
+          <textarea className="w-full border p-2 rounded" value={formatted} readOnly />
+        </div>
+      );
+    }
+
+    // YAML Formatter / Creator would require a small library
+    function YamlFormatterCreator() {
+      const [text, setText] = useState("");
+      const [formatted, setFormatted] = useState("");
+
+      const formatYaml = () => {
+        try {
+          // Use js-yaml CDN
+          const obj = jsyaml.load(text);
+          setFormatted(jsyaml.dump(obj));
+        } catch(e) {
+          setFormatted("Invalid YAML");
+        }
+      };
+
+      return (
+        <div className="p-4 bg-white rounded shadow space-y-2">
+          <textarea className="w-full border p-2 rounded" value={text} onChange={e=>setText(e.target.value)} placeholder="Enter YAML" />
+          <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" onClick={formatYaml}>Format YAML</button>
+          <textarea className="w-full border p-2 rounded" value={formatted} readOnly />
+        </div>
+      );
+    }
+
+    // JS / CSS / HTML formatter using browser built-in indentation
+    function SimpleCodeFormatter({ lang }) {
+      const [code, setCode] = useState("");
+      const [formatted, setFormatted] = useState("");
+
+      const format = () => {
+        if(lang === "js") setFormatted(code.split("\n").map(line=>line.trim()).join("\n"));
+        else setFormatted(code); // simple placeholder
+      };
+
+      return (
+        <div className="p-4 bg-white rounded shadow space-y-2">
+          <textarea className="w-full border p-2 rounded" value={code} onChange={e=>setCode(e.target.value)} placeholder={`Enter ${lang} code`} />
+          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={format}>Format {lang.toUpperCase()}</button>
+          <textarea className="w-full border p-2 rounded" value={formatted} readOnly />
+        </div>
+      );
+    }
+
+    // ---------- APP ----------
+
+    function App() {
+      const [active, setActive] = useState("TextToBase64");
+
+      const tools = {
+        TextToBase64: <TextToBase64 />,
+        Sha512: <Sha512Generator />,
+        Sha1And512: <Sha1To512Generator />,
+        UUID: <UuidGenerator />,
+        RandomString: <RandomStringGenerator />,
+        LoremIpsum: <LoremIpsumGenerator />,
+        DateToTimestamp: <DateToTimestamp />,
+        UrlEncodeDecode: <UrlEncodeDecode />,
+        JSONFormatter: <JsonFormatter />,
+        YAMLFormatter: <YamlFormatterCreator />,
+        JSFormatter: <SimpleCodeFormatter lang="js" />,
+        HTMLFormatter: <SimpleCodeFormatter lang="html" />,
+        CSSFormatter: <SimpleCodeFormatter lang="css" />,
+      };
+
+      return (
+        <div className="max-w-5xl mx-auto p-6">
+          <h1 className="text-3xl font-bold mb-6 text-center">All-in-One Dev Tools</h1>
+
+          <nav className="flex flex-wrap justify-center mb-6 gap-2">
+            {Object.keys(tools).map(tool => (
+              <button
+                key={tool}
+                className={`px-3 py-2 rounded ${active===tool ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"}`}
+                onClick={()=>setActive(tool)}
+              >{tool}</button>
+            ))}
+          </nav>
+
+          <div>
+            {tools[active]}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+
+  <!-- js-yaml CDN for YAML formatting -->
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+</body>
+</html>
